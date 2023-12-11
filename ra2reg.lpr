@@ -1,4 +1,4 @@
-program ra2reg;
+program EmperorReg;
 
 {$mode objfpc}{$H+}
 
@@ -18,62 +18,13 @@ const
 var
   optShowHelp: bool = False;
   optShowMsgBox: bool = True;
-  optWriteRa2Ini: bool = True;
   optWriteWoldataKey: bool = True;
   optSetCompatibility: bool = True;
-  optRegBlowfish: bool = True;
   optRegRa2: bool = True;
-  optRa2Enabled: bool = True;
-  optRa2mdEnabled: bool = True;
   optHighResSupport: bool = True;
+  optHighGraphicSupport: bool = True;
 
   function GetSystemMetrics(nIndex: int32): int32; stdcall; external 'user32.dll';
-  function DllRegisterServer(): longint; stdcall; external 'Blowfish.dll';
-
-  procedure RegBlowfish();
-
-  begin
-    if not optRegBlowfish then exit();
-    DllRegisterServer();
-  end;
-
-  procedure WriteRa2Ini(appPath: string; screenWidth, screenHeight: int32);
-  var
-    textFile: Text;
-  begin
-    if not optWriteRa2Ini then exit();
-
-    if optRa2Enabled then
-    begin
-      AssignFile(textFile, AppPath + '\RA2.INI');
-      rewrite(textFile);
-      Writeln(textFile, '[Video]');
-      Writeln(textFile, 'AllowHiResModes=yes');
-      Writeln(textFile, 'VideoBackBuffer=no');
-      Writeln(textFile, 'AllowVRAMSidebar=no');
-      Write(textFile, 'ScreenWidth=');
-      Writeln(textFile, screenWidth);
-      Write(textFile, 'ScreenHeight=');
-      Writeln(textFile, screenHeight);
-      Close(textFile);
-    end;
-
-    if optRa2mdEnabled then
-    begin
-      AssignFile(textFile, AppPath + '\RA2MD.INI');
-      rewrite(textFile);
-      Writeln(textFile, '[Video]');
-      Writeln(textFile, 'AllowHiResModes=yes');
-      Writeln(textFile, 'VideoBackBuffer=no');
-      Writeln(textFile, 'AllowVRAMSidebar=no');
-      Write(textFile, 'ScreenWidth=');
-      Writeln(textFile, screenWidth);
-      Write(textFile, 'ScreenHeight=');
-      Writeln(textFile, screenHeight);
-      Close(textFile);
-    end;
-
-  end;
 
   // Call randomize() before calling this method
   function GetRandomSerial: string;
@@ -99,7 +50,6 @@ var
     textFile: Text;
     i: int32;
   begin
-    if not optWriteWoldataKey then exit();
     AssignFile(textFile, appPath + '\' + KEY_FILENAME);
     rewrite(textFile);
     for i := 1 to RA2_KEY_SIZE do
@@ -107,55 +57,38 @@ var
     Close(textFile);
   end;
 
-  procedure WriteRa2Registry(appPath, serial: string);
+  procedure WriteEmperorRegistry(appPath, serial: string);
   var
     regKey32: Tregistry;
   begin
-    if not optRegRa2 then exit();
-
     regKey32 := Tregistry.Create(KEY_ALL_ACCESS or KEY_WOW64_32KEY);
     regKey32.RootKey := HKEY_LOCAL_MACHINE;
 
-    regKey32.OpenKey('SOFTWARE\Westwood\Red Alert 2', True);
+    regKey32.OpenKey('SOFTWARE\Westwood\Emperor', True);
     regKey32.WriteString('Serial', serial);
-    regKey32.WriteString('Name', 'Red Alert 2');
-    regKey32.WriteString('InstallPath', appPath + '\RA2.EXE');
-    regKey32.WriteInteger('SKU', 8448);
-    regKey32.WriteInteger('Version', 65542);
-    regKey32.CloseKey;
-
-    regKey32.OpenKey('SOFTWARE\Westwood\Yuri''s Revenge', True);
-    regKey32.WriteString('Serial', serial);
-    regKey32.WriteString('Name', 'Yuri''s Revenge');
-    regKey32.WriteString('InstallPath', appPath + '\RA2MD.EXE');
-    regKey32.WriteInteger('SKU', 10496);
-    regKey32.WriteInteger('Version', 65537);
+    regKey32.WriteString('Name', 'Emperor');
+    regKey32.WriteString('InstallPath', appPath + '\Emperor.EXE');
+    regKey32.WriteInteger('SKU', 7936);
+    regKey32.WriteInteger('Version', 65545);
+    // note: Yuri's Revenge also has this key, thus it's probably only for Westwood Online which is obsolete now
+    // regKey32.WriteString('HTMLPath', appPath + '\Data\HTML');
     regKey32.CloseKey;
 
     regKey32.Free;
   end;
 
-  procedure SetRa2Compatibility(appPath: string);
+  procedure SetEmperorCompatibility(appPath: string);
   var
     regKey64: Tregistry;
   begin
-    if not optSetCompatibility then exit();
     regKey64 := Tregistry.Create(KEY_ALL_ACCESS or KEY_WOW64_64KEY);
     regKey64.RootKey := HKEY_LOCAL_MACHINE;
     regKey64.OpenKey(
       'SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers',
       True);
-    if optRa2Enabled then
-    begin
-      regKey64.WriteString(AppPath + '\GAME.EXE', '~ RUNASADMIN HIGHDPIAWARE');
-      regKey64.WriteString(AppPath + '\RA2.EXE', '~ RUNASADMIN HIGHDPIAWARE');
-    end;
-    if optRa2mdEnabled then
-    begin
-      regKey64.WriteString(AppPath + '\GAMEMD.EXE', '~ RUNASADMIN HIGHDPIAWARE');
-      regKey64.WriteString(AppPath + '\RA2MD.EXE', '~ RUNASADMIN HIGHDPIAWARE');
-      regKey64.WriteString(AppPath + '\YURI.EXE', '~ RUNASADMIN HIGHDPIAWARE');
-    end;
+    regKey64.WriteString(AppPath + '\GAME.EXE', '~ RUNASADMIN HIGHDPIAWARE');
+    regKey64.WriteString(AppPath + '\Emperor.EXE', '~ RUNASADMIN HIGHDPIAWARE');
+
     regKey64.Free;
 
   end;
@@ -169,22 +102,34 @@ var
 
     while True do
     begin
-      opt := GetOpt('hifcbr2ysw');
+      opt := GetOpt('hfcbrsgw');
       case opt of
         'h': optShowHelp := True;
-        'i': optWriteRa2Ini := False;
         'f': optWriteWoldataKey := False;
         'c': optSetCompatibility := False;
-        'b': optRegBlowfish := False;
         'r': optRegRa2 := False;
-        '2': optRa2Enabled := False;
-        'y': optRa2mdEnabled := False;
         's': optHighResSupport := False;
+        'g': optHighGraphicSupport := False;
         'w': optShowMsgBox := False;
         '?': optShowHelp := True;
         #0: Break;
         else
           Break;
+      end;
+    end;
+
+    // post process
+    if not optRegRa2 then
+    begin
+      if optHighResSupport then
+      begin
+        Writeln('Warning: high resolution support is disabled because of option -r.');
+        optHighResSupport := False;
+      end;
+      if optHighGraphicSupport then
+      begin
+        Writeln('Warning: high graphics quality setting is disabled because of option -r.');
+        optHighGraphicSupport := False;
       end;
     end;
   end;
@@ -193,41 +138,74 @@ var
   const
     helpText =
       'Usage:' + LineEnding + '-h: show this help.' + LineEnding +
-      '-2: don''t handle everything about Red Alert 2. Just process Yuri''s Revenge.' +
-      LineEnding +
-      '-y: don''t handle everything about Yuri''s Revenge. Just process Red Alert 2.' +
-      LineEnding + '-i: don''t write RA2(MD).ini file.' + LineEnding +
-      '-f: don''t write Woldata.key file for Yuri''s Revenge' +
-      LineEnding + '-c: don''t set compatibility for gaming executables' +
-      LineEnding + '-b: don''t register Blowfish.dll file' + LineEnding +
-      '-r: don''t register Red Alert 2 and Yuri''s Revenge in registry' +
+      '-f: don''t write Woldata.key file' + LineEnding +
+      '-c: don''t set compatibility for gaming executables' +
+      LineEnding + '-r: don''t register the game in registry' +
       LineEnding +
       '-s: disable high resolution support and assume the screen is in SVGA (800x600) mode.'
       +
+      LineEnding + '-g: disable high graphics quality setting.' +
       LineEnding + '-w: don''t show messages in Win32 MessageBox.' +
       LineEnding + LineEnding +
-      'For regular Ra2 installation, you don''t need to specify these options. Leave all options as default.'
-      + LineEnding + 'For Ares-based mods like Mental Omega, specify "-2if".';
+      'For regular installation, you don''t need to specify these options. Leave all options as default.';
   begin
     Writeln(helpText);
 
   end;
 
-const
-  highResWarningText: string =
-    'Warning: your screen resolution is too high. In this situation, a map whose size is small causes crashes. It is advised to decrease your resolution at "Settings" in-game menu.';
-  highResWarningCaption: string = 'High Resolution Warning';
+  procedure WriteEmperorResolution(screenWidth, screenHeight: int32);
+  var
+    regKey32: Tregistry;
+  begin
+    // note: the resolution must be 4:3
+    // also, this method should be called after WriteEmperorRegistry()
+    regKey32 := Tregistry.Create(KEY_ALL_ACCESS or KEY_WOW64_32KEY);
+    regKey32.RootKey := HKEY_LOCAL_MACHINE;
+
+    regKey32.OpenKey('SOFTWARE\Westwood\Emperor\Options\Graphics', True);
+    regKey32.WriteString('ScreenWidth', IntToStr(screenWidth));
+    regKey32.WriteString('ScreenHeight', IntToStr(screenHeight));
+    regKey32.CloseKey;
+  end;
+
+  procedure WriteEmperorHighGraphicOptions();
+  var
+    regKey32: Tregistry;
+  begin
+    // note: this method should be called after WriteEmperorRegistry()
+    regKey32 := Tregistry.Create(KEY_ALL_ACCESS or KEY_WOW64_32KEY);
+    regKey32.RootKey := HKEY_LOCAL_MACHINE;
+
+    regKey32.OpenKey('SOFTWARE\Westwood\Emperor\Options\Graphics', True);
+    regKey32.WriteString('ColorDepth', '32');
+    regKey32.WriteString('EffectLOD', '2');
+    regKey32.WriteString('GraphicsLOD', '4');
+    regKey32.WriteString('LimitFrameRate', '0');
+    regKey32.WriteString('LimitTo16BitTex', '0');
+    regKey32.WriteString('ModelLOD', '2');
+    regKey32.WriteString('ShadowQuality', '2');
+    regKey32.WriteString('Shadows', '1');
+    regKey32.WriteString('TerrainLOD', '2');
+    regKey32.WriteString('TextureLOD', '0');
+    // note: HardwareTL and MultiTexture are hardware dependent
+    regKey32.DeleteKey('HardwareTL');
+    regKey32.DeleteKey('MultiTexture');
+    // I don't know what "AltDevice" is. Presumably it's hardware dependent
+    // In game's README.TXT file, it says: If you are running two video cards, the game may choose the video card you do not wish to use.  You can force it to use your alternate card by adding "-ALTVID" (without the quotes) to the Target line in the game's shortcut.
+    regKey32.DeleteKey('AltDevice');
+    regKey32.CloseKey;
+  end;
+
 var
   appPath: string;
   serial: string;
-  screenWidth, screenHeight: int32;
-  isHighRes: bool;
+  screenWidth, screenHeight, currentScreenWidth, currentScreenHeight: int32;
 
 {$R *.res}
 
 begin
-  Writeln('Register for Red Alert 2 and Yuri''s Revenge');
-  Writeln('Author: Sad Pencil');
+  Writeln('Register for Emperor: Battle for Dune');
+  Writeln('Author: SadPencil');
   Writeln();
   appPath := ExtractFileDir(ParamStr(0));
   Initialize();
@@ -237,26 +215,60 @@ begin
     exit();
   end;
 
-  Writeln('Generating serial number...');
-  serial := GetRandomSerial();
+  if optRegRa2 then
+  begin
+    Writeln('Generating serial number...');
+    serial := GetRandomSerial();
 
-  Writeln('Generating Woldata.key file...');
-  WriteWoldataKey(appPath);
+    Writeln('Writing registry...');
+    WriteEmperorRegistry(appPath, serial);
+  end;
 
-  Writeln('Writing registry...');
-  WriteRa2Registry(appPath, serial);
+  if optWriteWoldataKey then
+  begin
+    Writeln('Generating Woldata.key file...');
+    WriteWoldataKey(appPath);
+  end;
 
-  Writeln('Setting application compatibility...');
-  SetRa2Compatibility(appPath);
+  if optSetCompatibility then
+  begin
+    Writeln('Setting application compatibility...');
+    SetEmperorCompatibility(appPath);
+  end;
 
-  Writeln('Registering Blowfish.dll file...');
-  RegBlowfish();
-
-  Writeln('Enabling high resolution support...');
   if optHighResSupport then
   begin
-    screenWidth := GetSystemMetrics(SM_CXSCREEN);
-    screenHeight := GetSystemMetrics(SM_CYSCREEN);
+    Writeln('Enabling high resolution support...');
+
+    currentScreenWidth := GetSystemMetrics(SM_CXSCREEN);
+    currentScreenHeight := GetSystemMetrics(SM_CYSCREEN);
+
+    // try these solutions: 1400x1050, 1280x960, 1152x864, 1024x768, 800x600
+    if (currentScreenWidth >= 1400) and (currentScreenHeight >= 1050) then
+    begin
+      screenWidth := 1400;
+      screenHeight := 1050;
+    end
+    else if (currentScreenWidth >= 1280) and (currentScreenHeight >= 960) then
+    begin
+      screenWidth := 1280;
+      screenHeight := 960;
+    end
+    else if (currentScreenWidth >= 1152) and (currentScreenHeight >= 864) then
+    begin
+      screenWidth := 1152;
+      screenHeight := 864;
+    end
+    else if (currentScreenWidth >= 1024) and (currentScreenHeight >= 768) then
+    begin
+      screenWidth := 1024;
+      screenHeight := 768;
+    end
+    else
+    begin
+      screenWidth := 800;
+      screenHeight := 600;
+    end;
   end
   else
   begin
@@ -264,19 +276,24 @@ begin
     screenHeight := 600;
   end;
 
-  isHighRes := (screenWidth > 2560) or (screenHeight > 1440);
-  WriteRa2Ini(appPath, screenWidth, screenHeight);
-
-  if isHighRes then
+  if optRegRa2 then
   begin
-    Writeln(highResWarningText);
-    if optShowMsgBox then
-      MessageBox(0, PChar(highResWarningText), PChar(highResWarningCaption),
-        MB_OK or MB_ICONINFORMATION);
+    // note: optHighResSupport derives optRegRa2
+    // no matter whether optHighResSupport is true or false, we should write the resolution
+    Writeln('Resolution: ', screenWidth, 'x', screenHeight);
+    WriteEmperorResolution(screenWidth, screenHeight);
+  end;
+
+  if optHighGraphicSupport then
+  begin
+    // note: optHighGraphicSupport derives optRegRa2
+    Writeln('Setting high graphics quality...');
+    WriteEmperorHighGraphicOptions();
   end;
 
   if optShowMsgBox then
-    MessageBox(0, 'Setup complete.', 'Register for RA2 & YR (by: Sad Pencil)',
+    MessageBox(0, 'Setup complete.',
+      'Register for Emperor: Battle for Dune (by: SadPencil)',
       MB_OK or MB_ICONINFORMATION);
 
 end.

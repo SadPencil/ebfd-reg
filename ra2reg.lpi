@@ -11,7 +11,7 @@
         <CompatibilityMode Value="True"/>
       </Flags>
       <SessionStorage Value="InProjectDir"/>
-      <Title Value="Installer for C&amp;C:RA2"/>
+      <Title Value="Installer for Emperor: Battle for Dune"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
@@ -19,8 +19,8 @@
         <DpiAware Value="True"/>
         <ExecutionLevel Value="requireAdministrator"/>
         <AnsiUTF8 Value="True"/>
-        <TextName Value="SadPencil.Ra2KeyGen"/>
-        <TextDesc Value="SadPencil.Ra2KeyGen"/>
+        <TextName Value="SadPencil.EmperorKeyGen"/>
+        <TextDesc Value="SadPencil.EmperorKeyGen"/>
       </XPManifest>
       <Icon Value="0"/>
     </General>
@@ -50,7 +50,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="ra2reg"/>
+      <Filename Value="EmperorReg"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
