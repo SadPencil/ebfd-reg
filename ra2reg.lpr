@@ -243,23 +243,8 @@ begin
     currentScreenWidth := GetSystemMetrics(SM_CXSCREEN);
     currentScreenHeight := GetSystemMetrics(SM_CYSCREEN);
 
-    // try these solutions: 1400x1050, 1280x960, 1152x864, 1024x768, 800x600
-    if (currentScreenWidth >= 1400) and (currentScreenHeight >= 1050) then
-    begin
-      screenWidth := 1400;
-      screenHeight := 1050;
-    end
-    else if (currentScreenWidth >= 1280) and (currentScreenHeight >= 960) then
-    begin
-      screenWidth := 1280;
-      screenHeight := 960;
-    end
-    else if (currentScreenWidth >= 1152) and (currentScreenHeight >= 864) then
-    begin
-      screenWidth := 1152;
-      screenHeight := 864;
-    end
-    else if (currentScreenWidth >= 1024) and (currentScreenHeight >= 768) then
+    // try these solutions: 1024x768, 800x600
+    if (currentScreenWidth >= 1024) and (currentScreenHeight >= 768) then
     begin
       screenWidth := 1024;
       screenHeight := 768;
