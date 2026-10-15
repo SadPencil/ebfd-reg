@@ -238,7 +238,7 @@ begin
 
   if optHighResSupport then
   begin
-    Writeln('Enabling high resolution support...');
+    Writeln('Determine resolution...');
 
     currentScreenWidth := GetSystemMetrics(SM_CXSCREEN);
     currentScreenHeight := GetSystemMetrics(SM_CYSCREEN);
