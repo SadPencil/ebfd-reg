@@ -204,7 +204,7 @@ var
 {$R *.res}
 
 begin
-  Writeln('Register for Emperor: Battle for Dune');
+  Writeln('Initializer for Emperor: Battle for Dune');
   Writeln('Author: SadPencil');
   Writeln();
   appPath := ExtractFileDir(ParamStr(0));
